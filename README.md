@@ -55,7 +55,7 @@ python3 --version
 
 - A Bluetooth 4.0+ adapter accessible via BlueZ
 - The Solix device must be **within BLE range** (~10 metres)
-- No pairing needed, make sure the button LEd next to the USB ports is blinking.
+- No pairing needed, make sure the button LED next to the USB ports is blinking.
 
 ---
 
