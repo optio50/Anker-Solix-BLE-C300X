@@ -2,6 +2,8 @@
 
 A real-time desktop GUI for monitoring an Anker Solix C300/C300X power station over Bluetooth, with no cloud account or Anker app required.
 Thanks to Flip-Dots for the hard work developing the [SolixBLE](https://github.com/flip-dots/SolixBLE) library.
+I previously had this script working pretty good last year mostly bymyself and made a mess of it trying to get it to work after I upgraded the firmware (BTW, dont do that) confirmed working on v1.0.5.1.
+It was such a mess I decided to let copilot have a crack at it and its working well as of today.
 
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![Platform: Linux](https://img.shields.io/badge/platform-Linux-lightgrey)
