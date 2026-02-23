@@ -1,6 +1,7 @@
 # Anker Solix C300X — Bluetooth Power Monitor
 
 A real-time desktop GUI for monitoring an Anker Solix C300/C300X power station over Bluetooth, with no cloud account or Anker app required.
+Thanks to Flip-Dots for the hard work developing the [SolixBLE](https://github.com/flip-dots/SolixBLE) library.
 
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![Platform: Linux](https://img.shields.io/badge/platform-Linux-lightgrey)
@@ -61,8 +62,8 @@ python3 --version
 ### 1. Clone or download the script
 
 ```bash
-git clone <your-repo-url>
-cd SolixBLE
+git clone https://github.com/optio50/Anker-Solix-BLE-C300X
+cd Anker-Solix-BLE-C300X
 ```
 
 Or just download `Anker-Power-Monitor-Clickable.py` directly.
