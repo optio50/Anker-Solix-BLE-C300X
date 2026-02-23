@@ -215,3 +215,12 @@ Note: the C1000 does not have USB-C3, USB-A, DC out, or a light bar, so those di
 - [qasync](https://github.com/Matthewacon/qasync) — asyncio integration for Qt
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/) — Qt GUI framework
 - [pyqtgraph](https://www.pyqtgraph.org/) — fast scientific plotting
+- <img width="2400" height="1600" alt="Screenshot at 2026-02-22 20-55-08" src="https://github.com/user-attachments/assets/9ea9f8f8-9de0-4db8-97f6-686a2e7a8a9b" />
+<img width="2400" height="1600" alt="Screenshot at 2026-02-22 20-39-54" src="https://github.com/user-attachments/assets/f3fee363-e623-4e9e-b556-e9c2846fc906" />
+<img width="2400" height="1600" alt="Screenshot at 2026-02-22 20-37-48" src="https://github.com/user-attachments/assets/beacc17b-4961-49c9-81d6-8b8547718f71" />
+<img width="2400" height="1600" alt="Screenshot at 2026-02-22 19-16-54" src="https://github.com/user-attachments/assets/4085729c-e61d-4fbc-9b19-7ca60a21c242" />
+<img width="2400" height="1600" alt="Screenshot at 2026-02-22 19-14-55" src="https://github.com/user-attachments/assets/8e0019ab-924b-4584-8ab4-91cf8bb1d130" />
+<img width="2400" height="1600" alt="Screenshot at 2026-02-22 19-13-46" src="https://github.com/user-attachments/assets/45923ecd-6855-4483-9014-18239da1d361" />
+<img width="2400" height="1600" alt="Screenshot at 2026-02-22 19-13-11" src="https://github.com/user-attachments/assets/cc6d989c-8fb1-45a6-807c-e0f2095cf12e" />
+<img width="2412" height="1654" alt="Screenshot at 2026-02-22 19-12-19" src="https://github.com/user-attachments/assets/76c9f261-904e-42d8-93c5-f7ba21b79e24" />
+
