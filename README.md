@@ -66,6 +66,7 @@ python3 --version
 ```bash
 git clone https://github.com/optio50/Anker-Solix-BLE-C300X
 cd Anker-Solix-BLE-C300X
+./Anker-Power-Monitor-Clickable.py
 ```
 
 Or just download `Anker-Power-Monitor-Clickable.py` directly.
