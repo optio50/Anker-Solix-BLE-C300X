@@ -17,7 +17,7 @@ It was such a mess I decided to let copilot have a crack at it and its working w
 - 💡 Light bar status
 - 🔌 Port connection status for all outputs
 - 🔄 Automatic BLE device discovery — no MAC address configuration needed
-- 🔒 Supports encrypted telemetry (Anker firmware v3+ / post-2025)
+- 🔒 Supports encrypted telemetry (Anker firmware v1.0.5.1 / post-2025)
 - 📅 Date/time X-axis on all graphs
 - 🖱️ Clickable labels jump to the relevant graph tab
 
