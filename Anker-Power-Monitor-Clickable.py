@@ -88,11 +88,14 @@ class SolixBLEGUI(QMainWindow):
             "power_out", "battery_percentage"
         ]
         self.all_data_points = self.numeric_data_points + [
-            "ac_timer_remaining", "dc_timer_remaining", "hours_remaining",
-            "days_remaining", "time_remaining", "solar_port",
+            "ac_timer_remaining", "dc_timer_remaining",
+            "time_remaining", "solar_port",
             "usb_port_c1", "usb_port_c2", "usb_port_c3",
-            "usb_port_a1", "dc_port", "light"
+            "usb_port_a1", "dc_output", "light"
         ]
+        self.timer_fields = {
+            "ac_timer_remaining", "dc_timer_remaining", "time_remaining"
+        }
         self.data = {name: deque(maxlen=86400) for name in self.numeric_data_points}
         self.time = deque(maxlen=86400)
         self.first_data_received = False
@@ -163,7 +166,7 @@ class SolixBLEGUI(QMainWindow):
                     break
                 name = self.all_data_points[item_index]
                 pair_layout = QHBoxLayout()
-                if name in ["solar_port", "usb_port_c1", "usb_port_c2", "usb_port_c3", "usb_port_a1", "dc_port", "light"]:
+                if name in ["solar_port", "usb_port_c1", "usb_port_c2", "usb_port_c3", "usb_port_a1", "dc_output", "light"] or name in self.timer_fields:
                     lcd = ClickableLabel()
                     if name in ["usb_c1_power", "usb_c2_power", "usb_c3_power", "light"]:
                         lcd.clicked.connect(lambda n=name: self.switch_to_tab(n))
@@ -221,9 +224,9 @@ class SolixBLEGUI(QMainWindow):
         for tab_index, tab_name in enumerate(tab_order):
             if tab_name == "usb_c_power":
                 # Combined USB-C Power chart
-                usb_c1_plot = LiveLinePlot(pen="red", name="USB-C1 Power", brush=(255, 0, 0))  # red with alpha
-                usb_c2_plot = LiveLinePlot(pen="green", name="USB-C2 Power",brush=(0, 128, 0))  # green with alpha
-                usb_c3_plot = LiveLinePlot(pen="blue", name="USB-C3 Power", brush=(0, 0, 255))  # blue with alpha
+                usb_c1_plot = LiveLinePlot(pen="red", name="USB-C1 Power", brush=(255, 0, 0, 80), fillLevel=0)
+                usb_c2_plot = LiveLinePlot(pen="green", name="USB-C2 Power", brush=(0, 128, 0, 80), fillLevel=0)
+                usb_c3_plot = LiveLinePlot(pen="blue", name="USB-C3 Power", brush=(0, 0, 255, 80), fillLevel=0)
                 self.connectors['usb_c1_power'] = DataConnector(usb_c1_plot, max_points=87200, update_rate=1)
                 self.connectors['usb_c2_power'] = DataConnector(usb_c2_plot, max_points=87200, update_rate=1)
                 self.connectors['usb_c3_power'] = DataConnector(usb_c3_plot, max_points=87200, update_rate=1)
@@ -361,8 +364,18 @@ class SolixBLEGUI(QMainWindow):
             self.connection_label.setStyleSheet("QLabel { color: red; font-size: 16px; padding: 5px; }")
             return
 
-        self.connection_label.setText("Connected")
-        self.connection_label.setStyleSheet("QLabel { color: green; font-size: 16px; padding: 5px; }")
+        # If the device does not publish telemetry until state changes,
+        # request an explicit status update so the GUI can render current values.
+        try:
+            status = await self.solix_device.get_status_update()
+            if status:
+                self.solix_device._data = status
+                self.solix_device._last_data_timestamp = datetime.now()
+                self.solix_device._run_state_changed_callbacks()
+        except Exception as e:
+            logging.debug(f"Initial status update request failed: {e}")
+
+        self.update_gui_with_data()
     
     def _extract_device_info(self):
         """Read serial number from the decrypted telemetry packet and update the label.
@@ -382,16 +395,70 @@ class SolixBLEGUI(QMainWindow):
         self.device_info_label.setText(f"Serial: {serial}")
         self.device_info_label.setToolTip("Serial number from telemetry bytes 171–187")
 
+    def _format_seconds(self, seconds):
+        try:
+            seconds = int(seconds)
+        except Exception:
+            return str(seconds)
+        if seconds < 0:
+            sign = "-"
+            seconds = abs(seconds)
+        else:
+            sign = ""
+        if seconds < 60:
+            return f"{sign}{seconds}s"
+        minutes, seconds = divmod(seconds, 60)
+        if minutes < 60:
+            return f"{sign}{minutes}m {seconds}s"
+        hours, minutes = divmod(minutes, 60)
+        return f"{sign}{hours}h {minutes}m"
+
+    def _format_time_remaining(self, hours):
+        try:
+            hours = float(hours)
+        except Exception:
+            return str(hours)
+        if hours < 0:
+            sign = "-"
+            hours = abs(hours)
+        else:
+            sign = ""
+        days = int(hours // 24)
+        hours_left = hours - (days * 24)
+        if days > 0:
+            return f"{sign}{days}d {hours_left:.1f}h"
+        return f"{sign}{hours_left:.1f}h"
+
+    def _format_time_field(self, name, value):
+        if name in ["ac_timer_remaining", "dc_timer_remaining"]:
+            return self._format_seconds(value)
+        if name == "time_remaining":
+            return self._format_time_remaining(value)
+        return str(value)
+
     def update_gui_with_data(self):
         """Callback invoked by SolixBLE whenever new telemetry arrives.
         Also called periodically from the QTimer to keep the GUI current."""
-        if not self.solix_device or not self.solix_device.available:
+        if not self.solix_device or not self.solix_device.connected:
             self.connection_label.setText("Disconnected")
             self.connection_label.setStyleSheet("QLabel { color: red; font-size: 16px; padding: 5px; }")
             return
 
-        self.connection_label.setText("Connected")
-        self.connection_label.setStyleSheet("QLabel { color: green; font-size: 16px; padding: 5px; }")
+        if self.solix_device._data is None:
+            if not self.solix_device.negotiated:
+                self.connection_label.setText("Connected (negotiating)")
+                self.connection_label.setStyleSheet("QLabel { color: orange; font-size: 16px; padding: 5px; }")
+            else:
+                self.connection_label.setText("Connected (waiting for telemetry)")
+                self.connection_label.setStyleSheet("QLabel { color: yellow; font-size: 16px; padding: 5px; }")
+            return
+
+        if not self.solix_device.negotiated:
+            self.connection_label.setText("Connected (negotiated data)")
+            self.connection_label.setStyleSheet("QLabel { color: orange; font-size: 16px; padding: 5px; }")
+        else:
+            self.connection_label.setText("Connected")
+            self.connection_label.setStyleSheet("QLabel { color: green; font-size: 16px; padding: 5px; }")
 
         try:
             current_time = datetime.now().timestamp()
@@ -434,8 +501,10 @@ class SolixBLEGUI(QMainWindow):
                 elif name == "solar_port":
                     solar_w = values.get("solar_power_in", 0)
                     self.lcd_displays[name].setText("Charging" if solar_w > 0 else "Idle")
-                elif name in ["usb_port_c1", "usb_port_c2", "usb_port_c3", "usb_port_a1", "dc_port"]:
+                elif name in ["usb_port_c1", "usb_port_c2", "usb_port_c3", "usb_port_a1", "dc_output"]:
                     self.lcd_displays[name].setText(self.port_status_map.get(value, "Unknown"))
+                elif name in self.timer_fields:
+                    self.lcd_displays[name].setText(self._format_time_field(name, value))
                 else:
                     self.lcd_displays[name].display(value)
 
